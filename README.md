@@ -12,11 +12,11 @@ Ultrasonic rangefinder + IMU attitude estimation on one Pico W, running on RTIC 
 
 ## Features
 
-- **Interrupt-driven SRF05 ranging** — timer task pings every 60ms, GPIO ISR captures both 
+- **Interrupt-driven SRF05 ranging** — timer task pings every 60ms, GPIO ISR captures both
 echo edges, no busy-waiting on the CPU. Median-of-5 filtered, with a real timeout so
 an out-of-range reading never hangs the firmware.
 - **MPU-6050 attitude estimation** — startup calibration (gyro bias + Accel offsets), complementary
-filter for pitch/roll, animated bubble level on the OLED. Calibration persists to flash 
+filter for pitch/roll, animated bubble level on the OLED. Calibration persists to flash
 via `sequential-storage`, survives power-cycle.
 - **INT-pin-driven IMU sampling**, not polling.
 - **`crates/srf05` is a real, published, reusable driver** — generic
@@ -24,12 +24,12 @@ over `embedded_hal::digital` + `delay`/timer traits, blocking and async variants
 `embedded-hal-mock` tested. Not tied to this project's wiring or RTIC setup.
 - Fixed-point vs `f32` benchmark table (see `docs/timing.md`) — the IMU filter runs in
 an ISR-adjacent context, where the no-FPU cost actually matters.
-- Same USB-only dev loop as every project before this one: `defmt-serial` logging, 
+- Same USB-only dev loop as every project before this one: `defmt-serial` logging,
 `panic-persist` crash capture, no SWD probe.
 
 ## To-Do list
 
-- [ ] RTIC v2 skeleton — built once, shared by both sensors
+- [x] RTIC v2 skeleton — built once, shared by both sensors
 - [ ] SRF05 interrupt-driven edge capture, timeout + out-of-range handling
 - [ ] median-of-5 distance filter, host-tested, measured noise reduction documented
 - [ ] extract `srf05` to its own crate, `embedded-hal-mock` tests, `cargo publish --dry-run`
@@ -77,14 +77,14 @@ cargo run --release   # from firmware/, per the workspace .cargo/config.toml
 ./watch-defmt.sh
 ```
 
-Hold the button while moving the IMU through its extremes to 
+Hold the button while moving the IMU through its extremes to
 calibrate (same pattern as the pot-meter's calibration UX), release to store. Turn or tilt
 the board to see the bubble level track it; watch the distance readout on the SRF05 page respond
 as you move something in front of it.
 
 ## Architecture
 
-```
+```text
 srf05-imu-station/
 ├── crates/
 │   ├── srf05/          # published driver crate — generic over embedded-hal,
@@ -101,9 +101,9 @@ srf05-imu-station/
                             #   pico-weather-station (page 1 = range, page 2 = level)
 ```
 
-Two different kinds of crate here, worth being clear about the distinction: `srf05` is a *driver* — it genuinely does I/O, just abstracted 
-over `embedded-hal` traits so it's reusable and mockable rather than hardwired to this project's 
-peripherals. `motion-core` is *pure logic* — no I/O at all, same category 
+Two different kinds of crate here, worth being clear about the distinction: `srf05` is a *driver* — it genuinely does I/O, just abstracted
+over `embedded-hal` traits so it's reusable and mockable rather than hardwired to this project's
+peripherals. `motion-core` is *pure logic* — no I/O at all, same category
 as `pot-core` and `station-core` from the earlier projects. Both are testable on the host, but for different
 reasons: the driver via mocked hardware, the core crate because it never touches hardware in the
 first place.
