@@ -30,7 +30,7 @@ an ISR-adjacent context, where the no-FPU cost actually matters.
 ## To-Do list
 
 - [x] RTIC v2 skeleton — built once, shared by both sensors
-- [ ] SRF05 interrupt-driven edge capture, timeout + out-of-range handling
+- [x] SRF05 interrupt-driven edge capture, timeout + out-of-range handling
 - [ ] median-of-5 distance filter, host-tested, measured noise reduction documented
 - [ ] extract `srf05` to its own crate, `embedded-hal-mock` tests, `cargo publish --dry-run`
 - [ ] IMU calibration routine + flash persistence
