@@ -111,8 +111,8 @@ first place.
 ## Testing
 
 ```bash
-cargo test -p srf05          # embedded-hal-mock tests — driver behavior, no real hardware
-cargo test -p motion-core    # pure logic: median filter, complementary filter,
+cargo test -p srf05 --target x86_64-unknown-linux-gnu         # embedded-hal-mock tests, no real hardware
+cargo test -p motion-core --target x86_64-unknown-linux-gnu   # pure logic: median filter, complementary filter,
                               #   calibration math — reference-value assertions,
                               #   same style as pot-core/station-core
 cargo clippy --workspace --all-features -- -D warnings

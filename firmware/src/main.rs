@@ -18,7 +18,8 @@ mod app {
     use crate::ranging::{classify, EchoCapture, Reading};
     use crate::usb_log;
     use crate::XTAL_FREQ_HZ;
-    use embedded_hal::digital::{OutputPin, StatefulOutputPin};
+    use embedded_hal::digital::OutputPin;
+    use motion_core::{MedianFilter, NO_READING};
     use rp2040_hal::{clocks::init_clocks_and_plls, gpio, Sio, Watchdog};
     use rtic_monotonics::rp2040::prelude::*;
 
@@ -39,6 +40,7 @@ mod app {
         echo_pin: EchoPin,
         led: StatusLed,
         panic_msg: Option<&'static str>,
+        filter: MedianFilter<5>,
     }
 
     #[init]
@@ -93,6 +95,7 @@ mod app {
                 echo_pin,
                 led,
                 panic_msg,
+                filter: MedianFilter::new(),
             },
         )
     }
@@ -128,7 +131,7 @@ mod app {
         }
     }
 
-    #[task(local = [trig,led] , shared = [echo], priority = 2)]
+    #[task(local = [trig,led,filter ] , shared = [echo], priority = 2)]
     async fn ranger(mut cx: ranger::Context) {
         let mut next = Mono::now();
         loop {
@@ -141,23 +144,28 @@ mod app {
             Mono::delay(35.millis()).await;
 
             let width = cx.shared.echo.lock(|e| e.take_result());
-            match classify(width) {
-                Reading::Mm(mm) => {
-                    defmt::info!("range: {=u16} mm", mm);
-                    if mm < 300 {
-                        cx.local.led.set_high().ok();
-                    } else {
-                        cx.local.led.set_low().ok();
-                    }
-                }
-                Reading::OutOfRange => {
-                    defmt::info!("range: out of range");
-                    cx.local.led.set_low().ok();
-                }
-                Reading::NoEcho => {
-                    defmt::warn!("no echo - check wiring");
-                    cx.local.led.toggle().ok();
-                }
+            let reading = classify(width);
+
+            // Map to a plain number for the filter: real distances stay as they
+            // are, everything that isn't a distance becomes NO_READING.
+            let raw = match reading {
+                Reading::Mm(mm) => mm,
+                Reading::OutOfRange | Reading::NoEcho => NO_READING,
+            };
+            if let Reading::NoEcho = reading {
+                defmt::warn!("no echo - check wiring");
+            }
+
+            // While the window fills (first 4 samples) pass the raw value through
+            let filt = cx.local.filter.push(raw).unwrap_or(raw);
+
+            defmt::info!("range raw={=u16} filt={=u16}", raw, filt);
+
+            // The LED now follows the *filtered* value: on when closer than 30cm.
+            if filt < 300 {
+                cx.local.led.set_high().ok();
+            } else {
+                cx.local.led.set_low().ok();
             }
 
             next += 60.millis();
