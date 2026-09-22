@@ -31,7 +31,7 @@ an ISR-adjacent context, where the no-FPU cost actually matters.
 
 - [x] RTIC v2 skeleton — built once, shared by both sensors
 - [x] SRF05 interrupt-driven edge capture, timeout + out-of-range handling
-- [ ] median-of-5 distance filter, host-tested, measured noise reduction documented
+- [ ] median-of-5 distance filter, host-tested, measured noise reduction documented in ([Median Filtering Effect on SRF05 Noise](#median-filtering-effect-on-srf05-noise))
 - [ ] extract `srf05` to its own crate, `embedded-hal-mock` tests, `cargo publish --dry-run`
 - [ ] IMU calibration routine + flash persistence
 - [ ] complementary filter + OLED bubble level, INT-driven sampling
@@ -128,6 +128,17 @@ read ~0°/0°, tilted 90° should read accordingly) — synthetic but still mean
 of test as `pot-core`/`station-core`'s reference-value assertions.
 
 `firmware/` has no host tests, same reasoning as every prior project — RTIC task scheduling and real interrupt timing need actual hardware to verify.
+
+## Median Filtering Effect on SRF05 Noise
+
+At a target distance of approximately 50 cm, 503 samples were collected and compared:</br>
+
+- raw:       n=503 mean=502.2 sd=2.21 min=496 max=506.</br>
+- filtered:  n=503 mean=502.2 sd=2.08 min=496 max=505.</br>
+
+The filtered readings showed a slightly lower standard deviation, indicating that they were closer to the mean and therefore less noisy. This is a modest but measurable improvement, consistent with the expected smoothing effect of a median filter.
+
+PS: you can test this yourself using `watch-results.sh` and record how many values you'd like to use then run the script in `docs/noise_stats.py`
 
 ## Known limitations
 
