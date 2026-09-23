@@ -2,5 +2,20 @@
 name = "srf05"
 version = "0.1.0"
 edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Driver for the SRF05 ultrasonic rangefinder: blocking and interrupt-friendly, embedded-hal 1.0, no_std"
+repository = "https://github.com/stiiven-dev/srf05-imu-station"
+keywords = ["embedded-hal", "no-std", "ultrasonic", "sensor", "srf05"]
+categories = ["embedded", "no-std", "hardware-support"]
+readme = "README.md"
 
 [dependencies]
+embedded-hal = "1"
+embedded-hal-async = { version = "1", optional = true }
+defmt = { version = "1", optional = true }
+
+[features]
+async = ["dep:embedded-hal-async"]
+
+[dev-dependencies]
+embedded-hal-mock = { version = "0.11", features = ["eh1"] }

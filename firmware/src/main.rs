@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
 
-mod ranging;
 mod usb_log;
 use panic_persist as _; // placeholder; panic-persist comes back once logging is ported
 
@@ -14,14 +13,13 @@ const XTAL_FREQ_HZ: u32 = 12_000_000;
 //-----------------------the RTIC app-----------------------------
 #[rtic::app(device = rp2040_hal::pac, peripherals = true, dispatchers = [PIO0_IRQ_0, PIO0_IRQ_1])]
 mod app {
-
-    use crate::ranging::{classify, EchoCapture, Reading};
     use crate::usb_log;
     use crate::XTAL_FREQ_HZ;
     use embedded_hal::digital::OutputPin;
     use motion_core::{MedianFilter, NO_READING};
     use rp2040_hal::{clocks::init_clocks_and_plls, gpio, Sio, Watchdog};
     use rtic_monotonics::rp2040::prelude::*;
+    use srf05::{EdgeCapture, Error as EchoError, Reading};
 
     rp2040_timer_monotonic!(Mono);
 
@@ -31,7 +29,7 @@ mod app {
 
     #[shared]
     struct Shared {
-        echo: EchoCapture,
+        echo: EdgeCapture,
     }
 
     #[local]
@@ -88,7 +86,7 @@ mod app {
         startup::spawn().ok();
         (
             Shared {
-                echo: EchoCapture::new(),
+                echo: EdgeCapture::new(),
             },
             Local {
                 trig,
@@ -143,18 +141,16 @@ mod app {
 
             Mono::delay(35.millis()).await;
 
-            let width = cx.shared.echo.lock(|e| e.take_result());
-            let reading = classify(width);
-
             // Map to a plain number for the filter: real distances stay as they
             // are, everything that isn't a distance becomes NO_READING.
-            let raw = match reading {
-                Reading::Mm(mm) => mm,
-                Reading::OutOfRange | Reading::NoEcho => NO_READING,
+            let raw = match cx.shared.echo.lock(|e| e.take_reading()) {
+                Ok(Reading::Mm(mm)) => mm,
+                Ok(Reading::OutOfRange) => NO_READING,
+                Err(EchoError::TimeOut) => {
+                    defmt::warn!("no echo - check wiring");
+                    NO_READING
+                }
             };
-            if let Reading::NoEcho = reading {
-                defmt::warn!("no echo - check wiring");
-            }
 
             // While the window fills (first 4 samples) pass the raw value through
             let filt = cx.local.filter.push(raw).unwrap_or(raw);
