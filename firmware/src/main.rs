@@ -15,21 +15,37 @@ const XTAL_FREQ_HZ: u32 = 12_000_000;
 mod app {
     use crate::usb_log;
     use crate::XTAL_FREQ_HZ;
+    use core::cell::RefCell;
     use embedded_hal::digital::OutputPin;
-    use motion_core::{MedianFilter, NO_READING};
+    use embedded_hal_bus::i2c::RefCellDevice;
+    use motion_core::{Calibration, Calibrator, MedianFilter, RawSample3, NO_READING};
+    use rp2040_hal::fugit::RateExtU32;
+    use rp2040_hal::pac;
     use rp2040_hal::{clocks::init_clocks_and_plls, gpio, Sio, Watchdog};
     use rtic_monotonics::rp2040::prelude::*;
     use srf05::{EdgeCapture, Error as EchoError, Reading};
+    use static_cell::StaticCell;
 
     rp2040_timer_monotonic!(Mono);
 
     type TrigPin = gpio::Pin<gpio::bank0::Gpio15, gpio::FunctionSioOutput, gpio::PullDown>;
     type EchoPin = gpio::Pin<gpio::bank0::Gpio14, gpio::FunctionSioInput, gpio::PullNone>;
     type StatusLed = gpio::Pin<gpio::bank0::Gpio13, gpio::FunctionSioOutput, gpio::PullDown>;
+    type SdaPin = gpio::Pin<gpio::bank0::Gpio4, gpio::FunctionI2C, gpio::PullUp>;
+    type SclPin = gpio::Pin<gpio::bank0::Gpio5, gpio::FunctionI2C, gpio::PullUp>;
+    type ImuI2c = rp2040_hal::I2C<pac::I2C0, (SdaPin, SclPin)>;
+    type ImuIntPin = gpio::Pin<gpio::bank0::Gpio16, gpio::FunctionSioInput, gpio::PullNone>;
+    type ButtonPin = gpio::Pin<gpio::bank0::Gpio12, gpio::FunctionSioInput, gpio::PullUp>;
+
+    static I2C_BUS: StaticCell<RefCell<rp2040_hal::I2C<pac::I2C0, (SdaPin, SclPin)>>> =
+        StaticCell::new();
 
     #[shared]
     struct Shared {
         echo: EdgeCapture,
+        imu_data_ready: bool,
+        calibration: Option<Calibration>,
+        imu: Mpu6050<RefCellDevice<'static, ImuI2c>>,
     }
 
     #[local]
@@ -37,8 +53,16 @@ mod app {
         trig: TrigPin,
         echo_pin: EchoPin,
         led: StatusLed,
-        panic_msg: Option<&'static str>,
+
         filter: MedianFilter<5>,
+
+        imu_int_pin: ImuIntPin,
+        imu: Mpu6050<RefCell<'static, ImuI2c>>,
+        calibrator: Calibrator<200>,
+
+        button_pin: ButtonPin,
+
+        panic_msg: Option<&'static str>,
     }
 
     #[init]
@@ -83,10 +107,28 @@ mod app {
         echo_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
         echo_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
 
+        let sda: SdaPin = pins.gpio4.reconfigure();
+        let scl: SclPin = pins.gpio5.reconfigure();
+
+        let i2c: ImuI2c = rp2040_hal::I2C::i2c0(
+            cx.device.I2C0,
+            sda,
+            scl,
+            400.kHz(),
+            &mut resets,
+            &clocks.peripheral_clock,
+        );
+
+        let bus: &'static RefCell<_> = I2C_BUS.init(RefCell::new(i2c));
+        let imu_i2c = RefCellDevice::new(bus);
+
         startup::spawn().ok();
         (
             Shared {
                 echo: EdgeCapture::new(),
+                imu_data_ready: false,
+                calibration: None,
+                imu,
             },
             Local {
                 trig,

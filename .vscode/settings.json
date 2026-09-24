@@ -1,4 +1,5 @@
 {
+  "rust-analyzer.completion.autoimport.enable": false,
   "rust-analyzer.cargo.target": "thumbv6m-none-eabi",
   "rust-analyzer.check.allTargets": false,
   "editor.formatOnSave": true

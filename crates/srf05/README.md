@@ -63,7 +63,7 @@ let mut sensor = Srf05::new(trig_pin, echo_pin, delay);
 match sensor.measure() {
     Ok(srf05::Reading::Mm(mm)) => { /* got a distance */ }
     Ok(srf05::Reading::OutOfRange) => { /* valid echo, but nothing within ~4m */ }
-    Err(srf05::MeasureError::Reading(srf05::Error::Timeout)) => {
+    Err(srf05::MeasureError::Reading(srf05::Error::TimeOut)) => {
         /* no echo at all — check wiring/power */
     }
     Err(srf05::MeasureError::Pin(e)) => { /* GPIO operation itself failed */ }
@@ -109,12 +109,6 @@ uses. It has shipped inside an RTIC application with the echo pin bound to
 a shared GPIO interrupt vector alongside other sensors; see the
 [originating project](https://github.com/stiiven-dev/srf05-imu-station) for a full
 example.
-
-## Feature flags
-
-| Feature | Default | Effect                                                  |
-|---------|---------|---------------------------------------------------------|
-| `defmt` | off     | Implements `defmt::Format` for the crate's public types |
 
 ## MSRV
 

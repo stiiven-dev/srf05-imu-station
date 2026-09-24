@@ -77,8 +77,7 @@ cargo run --release   # from firmware/, per the workspace .cargo/config.toml
 ./watch-defmt.sh
 ```
 
-Hold the button while moving the IMU through its extremes to
-calibrate (same pattern as the pot-meter's calibration UX), release to store. Turn or tilt
+Hold the button while making sure it is still on a flat surface, release to store. Turn or tilt
 the board to see the bubble level track it; watch the distance readout on the SRF05 page respond
 as you move something in front of it.
 
@@ -97,6 +96,7 @@ srf05-imu-station/
 └── firmware/
     └── src/
         ├── main.rs       # RTIC v2 app: task definitions, resource wiring
+        ├── usb_log.rs
         └── ui/           # Page state machine — reused pattern from
                             #   pico-weather-station (page 1 = range, page 2 = level)
 ```
