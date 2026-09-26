@@ -18,6 +18,28 @@ pub struct Calibration {
     pub accel_offset: RawSample3,
 }
 
+impl Calibration {
+    /// Remove this calibration's fixed bias from a raw gyro sample.
+    pub fn correct_gyro(&self, raw: RawSample3) -> RawSample3 {
+        RawSample3 {
+            x: sub_sat(raw.x, self.gyro_bias.x),
+            y: sub_sat(raw.y, self.gyro_bias.y),
+            z: sub_sat(raw.z, self.gyro_bias.z),
+        }
+    }
+
+    /// Remove this calibration's fixed offset from a raw accelerometer
+    /// sample. A stationary, level board should read close to its expected
+    /// resting value (see `EXPECTED_ACCEL_Z_AT_REST`) afterward.
+    pub fn correct_accel(&self, raw: RawSample3) -> RawSample3 {
+        RawSample3 {
+            x: sub_sat(raw.x, self.accel_offset.x),
+            y: sub_sat(raw.y, self.accel_offset.y),
+            z: sub_sat(raw.z, self.accel_offset.z),
+        }
+    }
+}
+
 /// The board's Z axis reads this many LSB at rest, assuming the ±2g range
 /// (16384 LSB/g) and the board mounted flat with Z pointing up. If your
 /// wiring has Z pointing down at rest, flip the sign here once confirmed
@@ -84,6 +106,12 @@ impl<const N: usize> Default for Calibrator<N> {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Subtract with clamping instead of panicking/wrapping on overflow — a
+/// pathological reading shouldn't crash the correction step.
+fn sub_sat(a: i16, b: i16) -> i16 {
+    (i32::from(a) - i32::from(b)).clamp(i16::MIN as i32, i16::MAX as i32) as i16
 }
 
 #[cfg(test)]
@@ -170,5 +198,38 @@ mod tests {
             );
         }
         assert_eq!(result.unwrap().accel_offset.z, 100);
+    }
+
+    #[test]
+    fn correcting_with_its_own_bias_cancels_it_out() {
+        let cal = Calibration {
+            gyro_bias: RawSample3 { x: 12, y: -8, z: 3 },
+            accel_offset: RawSample3 {
+                x: 5,
+                y: -5,
+                z: 100,
+            },
+        };
+        let raw_gyro = RawSample3 { x: 12, y: -8, z: 3 };
+        assert_eq!(cal.correct_gyro(raw_gyro), RawSample3 { x: 0, y: 0, z: 0 });
+    }
+
+    #[test]
+    fn correction_clamps_instead_of_overflowing() {
+        let cal = Calibration {
+            gyro_bias: RawSample3 {
+                x: -20000,
+                y: 0,
+                z: 0,
+            },
+            accel_offset: RawSample3::default(),
+        };
+        let raw = RawSample3 {
+            x: 20000,
+            y: 0,
+            z: 0,
+        };
+        // 20000 - (-20000) = 40000, which overflows i16::MAX (32767)
+        assert_eq!(cal.correct_gyro(raw).x, i16::MAX);
     }
 }

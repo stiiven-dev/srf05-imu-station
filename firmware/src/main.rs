@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+mod debouncer;
 mod flash_store;
 mod imu;
 mod usb_log;
@@ -11,6 +12,10 @@ use panic_persist as _;
 pub static BOOT2: [u8; 256] = rp2040_boot2::BOOT_LOADER_GENERIC_03H; // was W25Q080 — mismatched your board's actual 2MB chip
 
 const XTAL_FREQ_HZ: u32 = 12_000_000;
+const DEBOUNCE_TICKS: u64 = 10_000; // 10 ms
+const MULTI_CLICKS_WINDOW_TICKS: u64 = 400_000; // 400 ms
+const HOLD_TICKS: u64 = 1_500_000; // 1.5 s
+const BUTTON_POLL_TICKS: u64 = 5_000;
 
 #[rtic::app(
     device = rp2040_hal::pac,
@@ -18,14 +23,17 @@ const XTAL_FREQ_HZ: u32 = 12_000_000;
     dispatchers = [PIO0_IRQ_0, PIO0_IRQ_1, PIO1_IRQ_0]
 )]
 mod app {
+    use crate::debouncer::{ButtonEvent, ButtonMonitor};
     use crate::usb_log;
-    use crate::XTAL_FREQ_HZ;
     use crate::{flash_store, imu};
+    use crate::{
+        BUTTON_POLL_TICKS, DEBOUNCE_TICKS, HOLD_TICKS, MULTI_CLICKS_WINDOW_TICKS, XTAL_FREQ_HZ,
+    };
     use embedded_hal::digital::OutputPin;
     use motion_core::{Calibration, Calibrator, MedianFilter, NO_READING};
     use rp2040_hal::fugit::RateExtU32;
-    use rp2040_hal::pac;
     use rp2040_hal::{clocks::init_clocks_and_plls, gpio, Sio, Watchdog};
+    use rp2040_hal::{pac, rom_data};
     use rtic_monotonics::rp2040::prelude::*;
     use srf05::{EdgeCapture, Error as EchoError, Reading};
 
@@ -45,6 +53,7 @@ mod app {
     struct Shared {
         echo: EdgeCapture,
         imu_data_ready: bool,
+        calibrating: bool,
         calibration: Option<Calibration>,
         // The bus itself, owned outright — not wrapped in RefCell, not behind
         // a 'static reference. RTIC's own lock() serializes access; whichever
@@ -61,7 +70,7 @@ mod app {
         filter: MedianFilter<5>,
         imu_int_pin: ImuIntPin,
         calibrator: Calibrator<200>,
-        button_pin: ButtonPin,
+        button: ButtonMonitor<ButtonPin>,
         panic_msg: Option<&'static str>,
     }
 
@@ -127,13 +136,24 @@ mod app {
         imu::init(&mut i2c_bus).expect("MPU-6050 init failed, check wiring/power");
 
         let button_pin: ButtonPin = pins.gpio12.into_pull_up_input();
-        button_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
+        let now0 = Mono::now().ticks();
+        let button = ButtonMonitor::new(
+            button_pin,
+            true,
+            DEBOUNCE_TICKS,
+            MULTI_CLICKS_WINDOW_TICKS,
+            HOLD_TICKS,
+            now0,
+        )
+        .expect("button pin read is infallible on this HAL");
 
+        button_task::spawn().ok();
         startup::spawn().ok();
         (
             Shared {
                 echo: EdgeCapture::new(),
                 imu_data_ready: false,
+                calibrating: false,
                 calibration: None,
                 i2c_bus,
             },
@@ -144,7 +164,7 @@ mod app {
                 filter: MedianFilter::new(),
                 imu_int_pin,
                 calibrator: Calibrator::new(),
-                button_pin,
+                button,
                 panic_msg,
             },
         )
@@ -196,7 +216,7 @@ mod app {
         }
     }
 
-    #[task(shared = [imu_data_ready, i2c_bus], priority = 1)]
+    #[task(local=[log_counter: u32 =0],shared = [imu_data_ready, i2c_bus,calibration,calibrating], priority = 1)]
     async fn imu_sample(mut cx: imu_sample::Context) {
         loop {
             loop {
@@ -212,24 +232,36 @@ mod app {
 
             let reading = cx.shared.i2c_bus.lock(|i2c| imu::read(i2c));
             match reading {
-                Ok((accel, gyro)) => {
-                    defmt::info!(
-                        "accel=({=i16},{=i16},{=i16}) gyro=({=i16},{=i16},{=i16})",
-                        accel.x,
-                        accel.y,
-                        accel.z,
-                        gyro.x,
-                        gyro.y,
-                        gyro.z
-                    )
+                Ok((accel_raw, gyro_raw)) => {
+                    let (accel, gyro) = cx.shared.calibration.lock(|cal| match cal {
+                        Some(c) => (c.correct_accel(accel_raw), c.correct_gyro(gyro_raw)),
+                        None => (accel_raw, gyro_raw),
+                    });
+
+                    *cx.local.log_counter += 1;
+                    if *cx.local.log_counter % 50 == 0 && !cx.shared.calibrating.lock(|c| *c) {
+                        defmt::info!(
+                            "accel=({=i16},{=i16},{=i16}) gyro=({=i16},{=i16},{=i16})",
+                            accel.x,
+                            accel.y,
+                            accel.z,
+                            gyro.x,
+                            gyro.y,
+                            gyro.z
+                        );
+                    }
                 }
                 Err(error) => defmt::warn!("imu read failed: {:?}", defmt::Debug2Format(&error)),
             }
         }
     }
 
-    #[task(local = [calibrator], shared = [calibration, i2c_bus], priority = 2)]
+    #[task(local = [calibrator], shared = [calibrating,calibration, i2c_bus], priority = 2)]
     async fn calibrate(mut cx: calibrate::Context) {
+        defmt::info!("calibrating: settling...");
+        cx.shared.calibrating.lock(|c| *c = true);
+        Mono::delay(500.millis()).await;
+
         defmt::info!("calibrating: hold the board still...");
         loop {
             let reading = cx.shared.i2c_bus.lock(|i2c| imu::read(i2c));
@@ -243,16 +275,21 @@ mod app {
                         );
                         cx.shared.calibration.lock(|c| *c = Some(result));
                         flash_store::store_calibration(&result).await;
+                        cx.shared.calibrating.lock(|c| *c = false);
                         return;
                     }
                 }
-                Err(_) => defmt::warn!("calibration read failed"),
+
+                Err(_) => {
+                    defmt::warn!("calibration read failed");
+                    cx.shared.calibrating.lock(|c| *c = false);
+                }
             }
             Mono::delay(10.millis()).await;
         }
     }
 
-    #[task(local = [trig, led, filter], shared = [echo], priority = 3)]
+    #[task(local = [trig, led, filter,log_counter: u32 =0], shared = [echo], priority = 3)]
     async fn ranger(mut cx: ranger::Context) {
         let mut next = Mono::now();
         loop {
@@ -274,7 +311,11 @@ mod app {
             };
 
             let filt = cx.local.filter.push(raw).unwrap_or(raw);
-            defmt::info!("range raw={=u16} filt={=u16}", raw, filt);
+
+            *cx.local.log_counter += 1;
+            if *cx.local.log_counter % 10 == 0 {
+                defmt::info!("range raw={=u16} filt={=u16}", raw, filt);
+            }
 
             if filt < 300 {
                 cx.local.led.set_high().ok();
@@ -284,6 +325,30 @@ mod app {
 
             next += 60.millis();
             Mono::delay_until(next).await;
+        }
+    }
+
+    #[task(local = [button], priority = 1)]
+    async fn button_task(cx: button_task::Context) {
+        loop {
+            let now = Mono::now().ticks();
+            match cx.local.button.update(now) {
+                Ok(ButtonEvent::HoldTriggered) => {
+                    defmt::info!("button held - starting calibration");
+                    calibrate::spawn().ok();
+                }
+                Ok(ButtonEvent::Clicks(3)) => {
+                    defmt::warn!("resetting into BOOTSEL !");
+                    Mono::delay(50.millis()).await;
+                    rom_data::reset_to_usb_boot(0, 0);
+                }
+                Ok(ButtonEvent::Clicks(n)) => {
+                    defmt::info!("button clicked {=u8} times", n);
+                }
+                Ok(ButtonEvent::None) => {}
+                Err(_) => {} // Infallible on this HAL's InputPin
+            }
+            Mono::delay(BUTTON_POLL_TICKS.micros()).await;
         }
     }
 }
