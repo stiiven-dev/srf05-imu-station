@@ -10,7 +10,7 @@ motion-core = { path = "../crates/motion-core" }
 cortex-m = "0.7.9"
 cortex-m-rt = "0.7"
 embedded-hal = { version = "1.0.0" }
-rp2040-hal = { version = "0.12.0", features = [
+rp2040-hal = { version = "0.11.0", features = [
     "rt",
     "critical-section-impl",
     "rtic-monotonic",
@@ -26,6 +26,10 @@ usbd-serial = "0.2"
 
 panic-persist = { version = "0.3", features = ["utf8"] }
 rp2040-boot2 = "0.3.0"
+sequential-storage = "8.0.1"
+embedded-storage-async = "0.4.2"
+rp2040-flash = "0.6.0"
+
 critical-section = "1.2.0"
 static_cell = "2.1.1"
 portable-atomic = { version = "1", default-features = false, features = [
