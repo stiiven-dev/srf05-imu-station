@@ -935,7 +935,7 @@ dependencies = [
 
 [[package]]
 name = "srf05-imu-station"
-version = "0.5.4"
+version = "0.6.0"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",

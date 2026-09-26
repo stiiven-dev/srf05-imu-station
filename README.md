@@ -33,7 +33,7 @@ an ISR-adjacent context, where the no-FPU cost actually matters.
 - [x] SRF05 interrupt-driven edge capture, timeout + out-of-range handling
 - [x] median-of-5 distance filter, host-tested, measured noise reduction documented in ([Median Filtering Effect on SRF05 Noise](#median-filtering-effect-on-srf05-noise))
 - [x] extract `srf05` to its own crate, `embedded-hal-mock` tests, `cargo publish --dry-run`
-- [ ] IMU calibration routine + flash persistence
+- [x] IMU calibration routine + flash persistence
 - [ ] complementary filter + OLED bubble level, INT-driven sampling
 - [ ] `docs/timing.md` with trigger/echo jitter numbers
 - [ ] fixed-point vs f32 benchmark table
