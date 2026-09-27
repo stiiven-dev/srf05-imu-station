@@ -34,7 +34,7 @@ an ISR-adjacent context, where the no-FPU cost actually matters.
 - [x] median-of-5 distance filter, host-tested, measured noise reduction documented in ([Median Filtering Effect on SRF05 Noise](#median-filtering-effect-on-srf05-noise))
 - [x] extract `srf05` to its own crate, `embedded-hal-mock` tests, `cargo publish --dry-run`
 - [x] IMU calibration routine + flash persistence
-- [ ] complementary filter + OLED bubble level, INT-driven sampling
+- [x] complementary filter + OLED bubble level, INT-driven sampling
 - [ ] `docs/timing.md` with trigger/echo jitter numbers
 - [ ] fixed-point vs f32 benchmark table
 - [ ] publish `srf05` to crates.io + tag `v1.0.0`

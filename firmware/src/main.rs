@@ -24,18 +24,32 @@ const BUTTON_POLL_TICKS: u64 = 5_000;
 )]
 mod app {
     use crate::debouncer::{ButtonEvent, ButtonMonitor};
-    use crate::usb_log;
-    use crate::{flash_store, imu};
+    use crate::{flash_store, imu, usb_log};
     use crate::{
         BUTTON_POLL_TICKS, DEBOUNCE_TICKS, HOLD_TICKS, MULTI_CLICKS_WINDOW_TICKS, XTAL_FREQ_HZ,
     };
+    use embedded_graphics::{
+        pixelcolor::BinaryColor,
+        prelude::*,
+        primitives::{Circle, PrimitiveStyle},
+    };
     use embedded_hal::digital::OutputPin;
-    use motion_core::{Calibration, Calibrator, MedianFilter, NO_READING};
+    use motion_core::{
+        Attitude, Calibration, Calibrator, ComplementaryFilter, MedianFilter, NO_READING,
+    };
     use rp2040_hal::fugit::RateExtU32;
     use rp2040_hal::{clocks::init_clocks_and_plls, gpio, Sio, Watchdog};
     use rp2040_hal::{pac, rom_data};
     use rtic_monotonics::rp2040::prelude::*;
     use srf05::{EdgeCapture, Error as EchoError, Reading};
+    use ssd1306::{mode::DisplayConfig, prelude::*, I2CDisplayInterface, Ssd1306};
+
+    const MAX_ANGLE_DEG: f32 = 30.0; //tilt at which the bubble reaches the limit
+    const CENTER: Point = Point::new(64, 32);
+    const BOUNDARY_RADIUS: i32 = 28;
+    const BUBBLE_RADIUS: u32 = 6;
+
+    const WATCHDOG_FEED_TICKS: u64 = 200_000; // 200ms — comfortably under the 500ms deadline
 
     rp2040_timer_monotonic!(Mono);
 
@@ -46,13 +60,12 @@ mod app {
     type SclPin = gpio::Pin<gpio::bank0::Gpio5, gpio::FunctionI2C, gpio::PullUp>;
     // Named for the peripheral, not the IMU — the OLED will share this same bus.
     type SharedI2c = rp2040_hal::I2C<pac::I2C0, (SdaPin, SclPin)>;
-    type ImuIntPin = gpio::Pin<gpio::bank0::Gpio16, gpio::FunctionSioInput, gpio::PullNone>;
+    type ImuIntPin = gpio::Pin<gpio::bank0::Gpio16, gpio::FunctionSioInput, gpio::PullDown>;
     type ButtonPin = gpio::Pin<gpio::bank0::Gpio12, gpio::FunctionSioInput, gpio::PullUp>;
 
     #[shared]
     struct Shared {
         echo: EdgeCapture,
-        imu_data_ready: bool,
         calibrating: bool,
         calibration: Option<Calibration>,
         // The bus itself, owned outright — not wrapped in RefCell, not behind
@@ -60,6 +73,11 @@ mod app {
         // task needs the bus (IMU today, OLED later) locks it, does its
         // transaction, and releases it. No driver owns the bus exclusively.
         i2c_bus: SharedI2c,
+        attitude: Attitude,
+        imu_data_ready: bool,
+        imu_heartbeat: u32,
+        oled_heartbeat: u32,
+        button_heartbeat: u32,
     }
 
     #[local]
@@ -67,11 +85,13 @@ mod app {
         trig: TrigPin,
         echo_pin: EchoPin,
         led: StatusLed,
-        filter: MedianFilter<5>,
+        median_filter: MedianFilter<5>,
         imu_int_pin: ImuIntPin,
         calibrator: Calibrator<200>,
+        comp_filter: ComplementaryFilter,
         button: ButtonMonitor<ButtonPin>,
         panic_msg: Option<&'static str>,
+        watchdog: Watchdog,
     }
 
     #[init]
@@ -119,21 +139,17 @@ mod app {
 
         let sda: SdaPin = pins.gpio4.reconfigure();
         let scl: SclPin = pins.gpio5.reconfigure();
-        let mut i2c_bus: SharedI2c = rp2040_hal::I2C::i2c0(
+        let i2c_bus: SharedI2c = rp2040_hal::I2C::i2c0(
             cx.device.I2C0,
             sda,
             scl,
-            100.kHz(),
+            400.kHz(),
             &mut resets,
             &clocks.peripheral_clock,
         );
 
-        let imu_int_pin: ImuIntPin = pins.gpio16.into_floating_input();
+        let imu_int_pin: ImuIntPin = pins.gpio16.into_pull_down_input();
         imu_int_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
-
-        // init() runs here, before anything is shared or locked — init owns
-        // everything outright until the moment it returns.
-        imu::init(&mut i2c_bus).expect("MPU-6050 init failed, check wiring/power");
 
         let button_pin: ButtonPin = pins.gpio12.into_pull_up_input();
         let now0 = Mono::now().ticks();
@@ -147,25 +163,37 @@ mod app {
         )
         .expect("button pin read is infallible on this HAL");
 
+        let comp_filter = ComplementaryFilter::new(0.98);
+
+        watchdog.start(rp2040_hal::fugit::MicrosDurationU32::millis(1000));
+
+        watchdog_task::spawn().ok();
+        heartbeat_log_task::spawn().ok();
         button_task::spawn().ok();
         startup::spawn().ok();
         (
             Shared {
                 echo: EdgeCapture::new(),
-                imu_data_ready: false,
                 calibrating: false,
                 calibration: None,
                 i2c_bus,
+                attitude: Attitude::default(),
+                imu_data_ready: false,
+                imu_heartbeat: 0,
+                oled_heartbeat: 0,
+                button_heartbeat: 0,
             },
             Local {
                 trig,
                 echo_pin,
                 led,
-                filter: MedianFilter::new(),
+                median_filter: MedianFilter::new(),
                 imu_int_pin,
                 calibrator: Calibrator::new(),
+                comp_filter,
                 button,
                 panic_msg,
+                watchdog,
             },
         )
     }
@@ -175,23 +203,39 @@ mod app {
         usb_log::poll();
     }
 
-    #[task(local = [panic_msg], shared = [calibration], priority = 1)]
+    #[task(local = [panic_msg], shared = [i2c_bus,calibration], priority = 1)]
     async fn startup(mut cx: startup::Context) {
         Mono::delay(3.secs()).await;
-        defmt::info!("srf05-imu-station is up!");
         if let Some(msg) = cx.local.panic_msg.take() {
             defmt::error!("previous boot panicked: {}", msg);
         }
+        let init_ok = cx.shared.i2c_bus.lock(|i2c| imu::init(i2c));
+        match init_ok {
+            Ok(()) => {
+                cx.shared.i2c_bus.lock(|i2c| {
+                    let interface = I2CDisplayInterface::new(i2c);
+                    let mut display =
+                        Ssd1306::new(interface, DisplaySize128x64, DisplayRotation::Rotate0)
+                            .into_buffered_graphics_mode();
+                    if display.init().is_err() {
+                        defmt::warn!("oled init failed");
+                    }
+                });
 
+                Mono::delay(200.millis()).await;
+
+                ranger::spawn().ok();
+                imu_sample::spawn().ok();
+                oled_task::spawn().ok();
+            }
+            Err(e) => defmt::error!("IMU init failed: {:?}", defmt::Debug2Format(&e)),
+        }
         if let Some(cal) = flash_store::load_calibration().await {
             defmt::info!("loaded stored calibration");
             cx.shared.calibration.lock(|c| *c = Some(cal));
         } else {
             defmt::info!("no stored calibration - hold the button to calibrate");
         }
-
-        ranger::spawn().ok();
-        imu_sample::spawn().ok();
     }
 
     #[task(binds = IO_IRQ_BANK0, priority = 3,
@@ -212,11 +256,11 @@ mod app {
         let imu_int = cx.local.imu_int_pin;
         if imu_int.interrupt_status(gpio::Interrupt::EdgeHigh) {
             imu_int.clear_interrupt(gpio::Interrupt::EdgeHigh);
-            cx.shared.imu_data_ready.lock(|ready| *ready = true);
+            cx.shared.imu_data_ready.lock(|f| *f = true)
         }
     }
 
-    #[task(local=[log_counter: u32 =0],shared = [imu_data_ready, i2c_bus,calibration,calibrating], priority = 1)]
+    #[task(local=[log_counter: u32 =0,comp_filter , last_sample: Option<fugit::TimerInstantU64<1_000_000>> = None],shared = [ i2c_bus,calibration,calibrating,attitude,imu_data_ready,imu_heartbeat], priority = 1)]
     async fn imu_sample(mut cx: imu_sample::Context) {
         loop {
             loop {
@@ -229,30 +273,45 @@ mod app {
                 }
                 Mono::delay(1.millis()).await;
             }
+            let now = Mono::now();
+            let dt_s = match cx.local.last_sample.replace(now) {
+                Some(prev) => (now - prev).to_micros() as f32 / 1_000_000.0,
+                None => 0.01, //first sample assume the nominal 100Hz period
+            };
 
             let reading = cx.shared.i2c_bus.lock(|i2c| imu::read(i2c));
-            match reading {
-                Ok((accel_raw, gyro_raw)) => {
-                    let (accel, gyro) = cx.shared.calibration.lock(|cal| match cal {
-                        Some(c) => (c.correct_accel(accel_raw), c.correct_gyro(gyro_raw)),
-                        None => (accel_raw, gyro_raw),
-                    });
 
-                    *cx.local.log_counter += 1;
-                    if *cx.local.log_counter % 50 == 0 && !cx.shared.calibrating.lock(|c| *c) {
-                        defmt::info!(
-                            "accel=({=i16},{=i16},{=i16}) gyro=({=i16},{=i16},{=i16})",
-                            accel.x,
-                            accel.y,
-                            accel.z,
-                            gyro.x,
-                            gyro.y,
-                            gyro.z
-                        );
-                    }
+            let (accel_raw, gyro_raw) = match reading {
+                Ok(v) => v,
+                Err(e) => {
+                    defmt::warn!("imu read failed: {:?}", defmt::Debug2Format(&e));
+                    continue; // back to outer loop, wait for next data-ready flag
                 }
-                Err(error) => defmt::warn!("imu read failed: {:?}", defmt::Debug2Format(&error)),
+            };
+
+            let (accel, gyro) = cx.shared.calibration.lock(|cal| match cal {
+                Some(c) => (c.correct_accel(accel_raw), c.correct_gyro(gyro_raw)),
+                None => (accel_raw, gyro_raw),
+            });
+
+            *cx.local.log_counter += 1;
+            if *cx.local.log_counter % 50 == 0 && !cx.shared.calibrating.lock(|c| *c) {
+                defmt::info!(
+                    "accel=({=i16},{=i16},{=i16}) gyro=({=i16},{=i16},{=i16})",
+                    accel.x,
+                    accel.y,
+                    accel.z,
+                    gyro.x,
+                    gyro.y,
+                    gyro.z
+                );
             }
+            let attitude =
+                cx.local
+                    .comp_filter
+                    .update(dt_s, gyro.gyro_to_dps(), accel.accel_to_g());
+            cx.shared.attitude.lock(|a| *a = attitude);
+            cx.shared.imu_heartbeat.lock(|h| *h = h.wrapping_add(1));
         }
     }
 
@@ -289,7 +348,7 @@ mod app {
         }
     }
 
-    #[task(local = [trig, led, filter,log_counter: u32 =0], shared = [echo], priority = 3)]
+    #[task(local = [trig, led, median_filter,log_counter: u32 =0], shared = [echo], priority = 3)]
     async fn ranger(mut cx: ranger::Context) {
         let mut next = Mono::now();
         loop {
@@ -310,7 +369,7 @@ mod app {
                 }
             };
 
-            let filt = cx.local.filter.push(raw).unwrap_or(raw);
+            let filt = cx.local.median_filter.push(raw).unwrap_or(raw);
 
             *cx.local.log_counter += 1;
             if *cx.local.log_counter % 10 == 0 {
@@ -328,8 +387,8 @@ mod app {
         }
     }
 
-    #[task(local = [button], priority = 1)]
-    async fn button_task(cx: button_task::Context) {
+    #[task(shared= [button_heartbeat],local = [button], priority = 1)]
+    async fn button_task(mut cx: button_task::Context) {
         loop {
             let now = Mono::now().ticks();
             match cx.local.button.update(now) {
@@ -348,7 +407,73 @@ mod app {
                 Ok(ButtonEvent::None) => {}
                 Err(_) => {} // Infallible on this HAL's InputPin
             }
+            cx.shared.button_heartbeat.lock(|h| *h = h.wrapping_add(1));
             Mono::delay(BUTTON_POLL_TICKS.micros()).await;
+        }
+    }
+
+    #[task(shared = [attitude,i2c_bus,oled_heartbeat],priority = 1)]
+    async fn oled_task(mut cx: oled_task::Context) {
+        let mut next = Mono::now();
+        loop {
+            let attitude = cx.shared.attitude.lock(|a| *a);
+
+            let travel = (BOUNDARY_RADIUS - BUBBLE_RADIUS as i32) as f32;
+            let dx = -(attitude.roll_deg / MAX_ANGLE_DEG).clamp(-1.0, 1.0) * travel;
+            let dy = (attitude.pitch_deg / MAX_ANGLE_DEG).clamp(-1.0, 1.0) * travel;
+            let bubble_center = CENTER + Point::new(dx as i32, dy as i32);
+
+            cx.shared.i2c_bus.lock(|i2c| {
+                let interface = I2CDisplayInterface::new(i2c);
+                let mut display =
+                    Ssd1306::new(interface, DisplaySize128x64, DisplayRotation::Rotate0)
+                        .into_buffered_graphics_mode();
+                display.clear(BinaryColor::Off).ok();
+
+                Circle::with_center(CENTER, (BOUNDARY_RADIUS * 2) as u32)
+                    .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
+                    .draw(&mut display)
+                    .ok();
+                Circle::with_center(bubble_center, BUBBLE_RADIUS * 2)
+                    .into_styled(PrimitiveStyle::with_fill(BinaryColor::On))
+                    .draw(&mut display)
+                    .ok();
+
+                display.flush().ok();
+            });
+            cx.shared.oled_heartbeat.lock(|h| *h = h.wrapping_add(1));
+            next += 100.millis();
+            Mono::delay_until(next).await;
+        }
+    }
+
+    #[task(local = [watchdog], priority = 3)]
+    async fn watchdog_task(cx: watchdog_task::Context) {
+        loop {
+            cx.local.watchdog.feed();
+            Mono::delay(WATCHDOG_FEED_TICKS.micros()).await;
+        }
+    }
+
+    #[task(local = [last_imu: u32 = 0, last_oled: u32 = 0, last_button: u32 = 0],
+       shared = [imu_heartbeat, oled_heartbeat, button_heartbeat], priority = 1)]
+    async fn heartbeat_log_task(mut cx: heartbeat_log_task::Context) {
+        loop {
+            let imu = cx.shared.imu_heartbeat.lock(|h| *h);
+            let oled = cx.shared.oled_heartbeat.lock(|h| *h);
+            let button = cx.shared.button_heartbeat.lock(|h| *h);
+
+            defmt::info!(
+                "alive: imu+{=u32} oled+{=u32} button+{=u32}",
+                imu.wrapping_sub(*cx.local.last_imu),
+                oled.wrapping_sub(*cx.local.last_oled),
+                button.wrapping_sub(*cx.local.last_button),
+            );
+            *cx.local.last_imu = imu;
+            *cx.local.last_oled = oled;
+            *cx.local.last_button = button;
+
+            Mono::delay(1.secs()).await;
         }
     }
 }
