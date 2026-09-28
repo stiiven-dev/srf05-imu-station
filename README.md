@@ -1,5 +1,7 @@
 # srf05-imu-station
 
+[![CI](https://github.com/stiiven-dev/srf05-imu-station/actions/workflows/ci.yml/badge.svg)](https://github.com/stiiven-dev/srf05-imu-station/actions/workflows/ci.yml)
+
 Ultrasonic rangefinder + IMU attitude estimation on one Pico W, running on RTIC v2 — no debug probe required. Includes a published, reusable `srf05` driver crate.
 
 <!-- TODO: hero photo of the breadboard -->

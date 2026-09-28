@@ -50,6 +50,12 @@ impl<const N: usize> MedianFilter<N> {
     }
 }
 
+impl<const N: usize> Default for MedianFilter<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

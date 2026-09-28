@@ -1,0 +1,67 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  test-libs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # Explicit --target: the workspace's root .cargo/config.toml defaults
+      # to thumbv6m-none-eabi for the firmware bin, which has no std and
+      # can't run host tests. srf05/motion-core are the only crates with
+      # tests, and both build fine for the host.
+      - run: cargo test -p srf05 --target x86_64-unknown-linux-gnu
+      - run: cargo test -p motion-core --target x86_64-unknown-linux-gnu
+
+  clippy-libs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy -p srf05 --all-features -- -D warnings
+      - run: cargo clippy -p motion-core --all-features -- -D warnings
+
+  build-firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv6m-none-eabi
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install flip-link
+      - run: cargo build -p srf05-imu-station --release
+
+  build-srf05-embedded:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv6m-none-eabi
+      - uses: Swatinem/rust-cache@v2
+      # Confirms srf05 is genuinely no_std-buildable standalone, same
+      # check from the crate's own publish checklist.
+      - run: cargo build -p srf05 --target thumbv6m-none-eabi --no-default-features
