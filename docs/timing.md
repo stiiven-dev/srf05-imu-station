@@ -64,6 +64,37 @@ line.
   requested 10µs delay; the SRF05 tolerates a longer-than-minimum pulse,
   so this overhead has no functional effect on ranging.
 
+## Fixed-point vs f32 complementary filter benchmark
+
+Measured on-device: 2000 back-to-back calls to `update()` on fixed
+synthetic input, timed with the RP2040's 1µs hardware timer. The RP2040's
+Cortex-M0+ has no FPU and no hardware divide, so every `f32` operation and
+every integer division compiles to a software library call.
+
+| Implementation | avg time/call |
+| --- | --- |
+| f32 (libm atan2f/sqrtf) | 65,097 ns |
+| fixed-point (Q16.16, CORDIC atan2, integer sqrt) | 53,058 ns |
+
+Fixed-point is ~18% faster (1.23x) — a real but more modest gain than
+"no FPU, no hardware divide" might suggest. CORDIC removes division from
+the angle computation itself (shifts and adds only), but the surrounding
+unit conversions — gyro raw-to-dps (`/ 131`) and the dt-to-Q16.16
+conversion (`/ 1_000_000`) — still perform integer division, which is
+just as much a software library call on this core as f32 division is.
+`isqrt`'s Newton's-method loop also divides on every iteration. The
+CORDIC loop's 16 iterations of `i64` arithmetic add further overhead, as
+64-bit operations are multi-instruction on a 32-bit core.
+
+In short: eliminating *trig* division bought less than expected because
+division persisted elsewhere in the pipeline. A version that replaced the
+remaining `/ 131` and `/ 1_000_000` divisions with precomputed
+reciprocal multiplication (e.g. `(gx as i64 * RECIP_131_Q16) >> 16`
+instead of `/ 131`) would likely close more of the gap — left as a
+documented possible next step rather than implemented here, since the
+current benchmark's honest, more modest number is itself the useful
+result: it shows *where* the remaining cost actually lives.
+
 ## Known limitation
 
 No oscilloscope or logic analyzer was used. All numbers are software

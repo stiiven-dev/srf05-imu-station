@@ -227,6 +227,7 @@ mod app {
                 ranger::spawn().ok();
                 imu_sample::spawn().ok();
                 oled_task::spawn().ok();
+                filter_benchmark::spawn().ok();
             }
             Err(e) => defmt::error!("IMU init failed: {:?}", defmt::Debug2Format(&e)),
         }
@@ -487,5 +488,44 @@ mod app {
 
             Mono::delay(1.secs()).await;
         }
+    }
+
+    #[task(priority = 1)]
+    async fn filter_benchmark(_cx: filter_benchmark::Context) {
+        const ITERS: u32 = 2000;
+        let gyro = (12i16, -8, 3);
+        let accel = (150i16, -80, 16300);
+
+        let mut f32_filter = motion_core::ComplementaryFilter::new(0.98);
+        let t0 = Mono::now();
+        for _ in 0..ITERS {
+            let g = (
+                gyro.0 as f32 / 131.0,
+                gyro.1 as f32 / 131.0,
+                gyro.2 as f32 / 131.0,
+            );
+            let a = (
+                accel.0 as f32 / 16384.0,
+                accel.1 as f32 / 16384.0,
+                accel.2 as f32 / 16384.0,
+            );
+            core::hint::black_box(f32_filter.update(0.01, g, a));
+        }
+        let f32_total_us = (Mono::now() - t0).to_micros();
+
+        let mut fixed_filter = motion_core::FixedComplementaryFilter::new(0.98);
+        let t1 = Mono::now();
+        for _ in 0..ITERS {
+            core::hint::black_box(fixed_filter.update(10_000, gyro, accel));
+        }
+        let fixed_total_us = (Mono::now() - t1).to_micros();
+
+        defmt::info!(
+            "benchmark: f32 total_us={=u64} avg_ns={=u32}  fixed total_us={=u64} avg_ns={=u32}",
+            f32_total_us,
+            (f32_total_us * 1000 / ITERS as u64) as u32,
+            fixed_total_us,
+            (fixed_total_us * 1000 / ITERS as u64) as u32,
+        );
     }
 }

@@ -35,8 +35,8 @@ an ISR-adjacent context, where the no-FPU cost actually matters.
 - [x] extract `srf05` to its own crate, `embedded-hal-mock` tests, `cargo publish --dry-run`
 - [x] IMU calibration routine + flash persistence
 - [x] complementary filter + OLED bubble level, INT-driven sampling
-- [ ] `docs/timing.md` with trigger/echo jitter numbers
-- [ ] fixed-point vs f32 benchmark table
+- [x] `docs/timing.md` with trigger/echo jitter numbers
+- [x] fixed-point vs f32 benchmark table
 - [ ] publish `srf05` to crates.io + tag `v1.0.0`
 
 ## Hardware
@@ -67,8 +67,6 @@ No debug probe needed — same USB-only workflow as every prior project.
 | 3V3 (pin 36)  | MPU-6050 VCC + OLED VCC         | **MPU-6050 from 3V3, not VBUS** — many clone modules back-drive 3.3V GPIOs otherwise                                                                             |
 | VBUS (pin 40) | SRF05 VCC                       | **5V, not 3V3** — SRF05 won't run reliably at 3.3V                                                                                                               |
 | GND (pin 38)  | Common ground                   | every module, no exceptions — this is the one project in the series mixing 5V and 3.3V sections, so missing ground here is the likeliest cause of anything weird |
-
-<!-- TODO: docs/wiring.md with the full diagram -->
 
 ## Quickstart
 
