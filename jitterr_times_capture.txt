@@ -1,0 +1,413 @@
+[connected]    /dev/ttyACM0
+[disconnected] /dev/ttyACM0 — rescanning...
+[connected]    /dev/ttyACM1
+INFO  alive: imu+0 oled+0 button+199
+INFO  alive: imu+0 oled+0 button+200
+INFO  alive: imu+0 oled+0 button+200
+INFO  loaded stored calibration
+INFO  range raw=91 filt=82 timing trig_us=20 wake_jitter_us=10 period_us=60000
+INFO  accel=(2295,-272,16477) gyro=(-174,-1,-144)
+INFO  alive: imu+65 oled+8 button+152
+INFO  range raw=78 filt=78 timing trig_us=26 wake_jitter_us=10 period_us=60001
+INFO  accel=(1909,-496,16471) gyro=(97,251,135)
+INFO  range raw=82 filt=82 timing trig_us=21 wake_jitter_us=11 period_us=60002
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(2205,-240,16591) gyro=(-81,-77,-92)
+INFO  range raw=350 filt=350 timing trig_us=22 wake_jitter_us=12 period_us=60003
+INFO  accel=(2079,-438,16665) gyro=(149,-301,46)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=82 filt=82 timing trig_us=24 wake_jitter_us=11 period_us=60000
+INFO  accel=(2299,-14,16487) gyro=(-128,-248,-131)
+INFO  range raw=73 filt=73 timing trig_us=20 wake_jitter_us=13 period_us=60006
+INFO  accel=(2589,-160,16451) gyro=(85,120,55)
+INFO  alive: imu+79 oled+10 button+140
+INFO  range raw=64 filt=64 timing trig_us=20 wake_jitter_us=13 period_us=60005
+INFO  accel=(2417,-158,16597) gyro=(-24,61,58)
+INFO  range raw=73 filt=73 timing trig_us=20 wake_jitter_us=11 period_us=60001
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(2099,-260,16593) gyro=(-46,-154,-2)
+INFO  range raw=95 filt=82 timing trig_us=20 wake_jitter_us=13 period_us=60004
+INFO  accel=(1367,314,16543) gyro=(373,460,95)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=95 filt=104 timing trig_us=22 wake_jitter_us=16 period_us=60003
+INFO  accel=(2325,456,16341) gyro=(71,-415,229)
+INFO  range raw=64 filt=73 timing trig_us=19 wake_jitter_us=16 period_us=60005
+INFO  accel=(2747,4,16581) gyro=(114,-158,11)
+INFO  alive: imu+81 oled+10 button+140
+INFO  range raw=68 filt=68 timing trig_us=21 wake_jitter_us=10 period_us=60001
+INFO  accel=(2637,90,17125) gyro=(-153,-610,-908)
+INFO  range raw=68 filt=68 timing trig_us=21 wake_jitter_us=12 period_us=60004
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2929,266,16659) gyro=(-42,387,-36)
+INFO  range raw=59 filt=64 timing trig_us=19 wake_jitter_us=15 period_us=60008
+INFO  accel=(4547,238,16491) gyro=(64,-2381,-11)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=75 filt=71 timing trig_us=23 wake_jitter_us=9 period_us=60001
+INFO  accel=(5579,-268,16411) gyro=(-87,-572,-50)
+INFO  range raw=51 filt=56 timing trig_us=22 wake_jitter_us=13 period_us=60004
+INFO  alive: imu+81 oled+11 button+141
+INFO  accel=(7425,226,15703) gyro=(3,-1012,-138)
+INFO  range raw=62 filt=58 timing trig_us=21 wake_jitter_us=12 period_us=60004
+INFO  accel=(8347,150,15129) gyro=(-136,-214,36)
+INFO  range raw=52 filt=52 timing trig_us=29 wake_jitter_us=11 period_us=60003
+INFO  alive: imu+83 oled+10 button+140
+INFO  accel=(8971,358,14865) gyro=(-580,403,-96)
+INFO  range raw=58 filt=52 timing trig_us=25 wake_jitter_us=13 period_us=60002
+INFO  accel=(5945,328,15787) gyro=(326,2243,248)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=67 filt=66 timing trig_us=23 wake_jitter_us=15 period_us=60005
+INFO  accel=(2897,-244,16719) gyro=(338,-420,-906)
+INFO  range raw=73 filt=68 timing trig_us=20 wake_jitter_us=8 period_us=59998
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(-653,-1122,16651) gyro=(-2481,2811,214)
+INFO  range raw=310 filt=354 timing trig_us=20 wake_jitter_us=10 period_us=60001
+INFO  accel=(-3661,-1624,15443) gyro=(169,3932,683)
+INFO  range raw=365 filt=364 timing trig_us=23 wake_jitter_us=9 period_us=59996
+INFO  alive: imu+79 oled+10 button+140
+INFO  accel=(-8109,-2142,14211) gyro=(-1517,3578,509)
+INFO  range raw=391 filt=381 timing trig_us=22 wake_jitter_us=9 period_us=59997
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(-7857,-2506,13289) gyro=(-8,-1606,-259)
+INFO  range raw=387 filt=388 timing trig_us=23 wake_jitter_us=9 period_us=59996
+INFO  accel=(-5291,-2160,15709) gyro=(-572,-4199,-984)
+INFO  range raw=364 filt=365 timing trig_us=27 wake_jitter_us=12 period_us=60005
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(-1351,-1668,16335) gyro=(1109,-2867,-623)
+INFO  range raw=280 filt=287 timing trig_us=26 wake_jitter_us=18 period_us=60008
+INFO  accel=(1327,-742,16881) gyro=(434,-112,-42)
+INFO  range raw=344 filt=344 timing trig_us=30 wake_jitter_us=20 period_us=60011
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(2505,-56,16481) gyro=(93,71,-232)
+INFO  range raw=64 filt=73 timing trig_us=24 wake_jitter_us=12 period_us=60005
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2383,-48,16605) gyro=(118,1,-26)
+INFO  range raw=73 filt=64 timing trig_us=25 wake_jitter_us=9 period_us=60000
+INFO  range raw=64 filt=64 timing trig_us=20 wake_jitter_us=9 period_us=60001
+INFO  accel=(2525,468,16683) gyro=(1947,-1925,-325)
+INFO  alive: imu+80 oled+10 button+141
+INFO  range raw=262 filt=265 timing trig_us=22 wake_jitter_us=9 period_us=60001
+INFO  accel=(2177,5298,15735) gyro=(3195,406,-495)
+INFO  range raw=287 filt=274 timing trig_us=20 wake_jitter_us=11 period_us=60001
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(4199,7094,14679) gyro=(225,-4417,-975)
+INFO  range raw=315 filt=284 timing trig_us=22 wake_jitter_us=12 period_us=60000
+INFO  accel=(1151,7884,15581) gyro=(-423,7412,-544)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=335 filt=340 timing trig_us=27 wake_jitter_us=13 period_us=60004
+INFO  accel=(1579,9010,13681) gyro=(783,-612,46)
+INFO  range raw=295 filt=296 timing trig_us=18 wake_jitter_us=13 period_us=60005
+INFO  accel=(3267,9680,13465) gyro=(-415,576,379)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=284 filt=280 timing trig_us=21 wake_jitter_us=12 period_us=60003
+INFO  accel=(2435,9078,14319) gyro=(-5199,519,340)
+INFO  range raw=331 filt=331 timing trig_us=20 wake_jitter_us=7 period_us=59998
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(1793,1706,16773) gyro=(-4454,1630,467)
+INFO  range raw=278 filt=287 timing trig_us=25 wake_jitter_us=18 period_us=60010
+INFO  accel=(1501,-2700,16005) gyro=(-3123,-498,306)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=253 filt=258 timing trig_us=26 wake_jitter_us=11 period_us=60001
+INFO  accel=(1429,-5874,15553) gyro=(-1366,628,262)
+INFO  range raw=276 filt=268 timing trig_us=25 wake_jitter_us=12 period_us=60005
+INFO  accel=(929,-8270,14315) gyro=(-1536,479,315)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=292 filt=279 timing trig_us=22 wake_jitter_us=8 period_us=60000
+INFO  accel=(11,-8320,14227) gyro=(4063,2029,-182)
+INFO  range raw=236 filt=260 timing trig_us=18 wake_jitter_us=9 period_us=60000
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(1013,488,16425) gyro=(1336,-710,-1041)
+INFO  range raw=223 filt=228 timing trig_us=23 wake_jitter_us=15 period_us=60007
+INFO  accel=(2441,70,16539) gyro=(-506,480,-220)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=228 filt=219 timing trig_us=27 wake_jitter_us=9 period_us=60000
+INFO  accel=(2893,316,16651) gyro=(-142,-203,265)
+INFO  range raw=223 filt=223 timing trig_us=20 wake_jitter_us=10 period_us=60001
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2801,474,16395) gyro=(228,-221,127)
+INFO  range raw=228 filt=228 timing trig_us=25 wake_jitter_us=11 period_us=60000
+INFO  accel=(2697,564,16641) gyro=(63,28,-118)
+INFO  range raw=232 filt=232 timing trig_us=22 wake_jitter_us=7 period_us=60000
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2575,598,16605) gyro=(38,-299,106)
+INFO  range raw=228 filt=228 timing trig_us=19 wake_jitter_us=15 period_us=60006
+INFO  accel=(2409,336,16733) gyro=(-25,147,279)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=233 filt=237 timing trig_us=28 wake_jitter_us=13 period_us=60002
+INFO  accel=(2719,182,16731) gyro=(-140,-171,-49)
+INFO  range raw=224 filt=224 timing trig_us=25 wake_jitter_us=7 period_us=59999
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(2537,350,16471) gyro=(-31,450,-20)
+INFO  range raw=237 filt=237 timing trig_us=23 wake_jitter_us=11 period_us=60003
+INFO  accel=(2157,244,16831) gyro=(-88,-84,41)
+INFO  range raw=237 filt=233 timing trig_us=25 wake_jitter_us=13 period_us=60006
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(2087,310,16669) gyro=(-110,187,-175)
+INFO  range raw=224 filt=229 timing trig_us=24 wake_jitter_us=10 period_us=59998
+INFO  accel=(2613,308,16583) gyro=(-407,392,-63)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=232 filt=232 timing trig_us=28 wake_jitter_us=9 period_us=60000
+INFO  accel=(2679,344,16763) gyro=(58,194,-13)
+INFO  range raw=228 filt=228 timing trig_us=22 wake_jitter_us=18 period_us=60003
+INFO  alive: imu+80 oled+10 button+141
+INFO  accel=(2561,380,16455) gyro=(37,380,-47)
+INFO  range raw=232 filt=237 timing trig_us=25 wake_jitter_us=12 period_us=60000
+INFO  accel=(1995,392,16909) gyro=(-172,189,6)
+INFO  range raw=246 filt=233 timing trig_us=27 wake_jitter_us=8 period_us=60001
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2051,-270,16891) gyro=(165,-502,-77)
+INFO  range raw=234 filt=238 timing trig_us=29 wake_jitter_us=11 period_us=60004
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(2821,426,16213) gyro=(-63,192,-84)
+INFO  range raw=237 filt=237 timing trig_us=22 wake_jitter_us=13 period_us=60002
+INFO  accel=(2545,456,16651) gyro=(135,135,107)
+INFO  range raw=233 filt=233 timing trig_us=21 wake_jitter_us=13 period_us=60006
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(2721,254,16567) gyro=(423,-320,697)
+INFO  range raw=243 filt=238 timing trig_us=25 wake_jitter_us=10 period_us=59997
+INFO  range raw=234 filt=234 timing trig_us=22 wake_jitter_us=8 period_us=60001
+INFO  accel=(2335,914,16725) gyro=(-33,-77,79)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=243 filt=243 timing trig_us=23 wake_jitter_us=12 period_us=60002
+INFO  accel=(2589,440,16553) gyro=(12,-239,98)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=234 filt=242 timing trig_us=22 wake_jitter_us=11 period_us=60003
+INFO  accel=(2831,418,16537) gyro=(-196,-320,71)
+INFO  range raw=238 filt=229 timing trig_us=20 wake_jitter_us=9 period_us=60002
+INFO  accel=(3477,582,16803) gyro=(-14,-823,470)
+INFO  alive: imu+79 oled+10 button+140
+INFO  range raw=243 filt=243 timing trig_us=19 wake_jitter_us=15 period_us=60003
+INFO  accel=(2557,1252,16283) gyro=(215,-544,256)
+INFO  range raw=242 filt=238 timing trig_us=23 wake_jitter_us=10 period_us=60002
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(2713,580,16625) gyro=(61,4,29)
+INFO  range raw=242 filt=229 timing trig_us=18 wake_jitter_us=15 period_us=60006
+INFO  accel=(2823,370,16621) gyro=(30,18,24)
+INFO  alive: imu+81 oled+10 button+140
+INFO  range raw=233 filt=233 timing trig_us=25 wake_jitter_us=13 period_us=60003
+INFO  accel=(3059,314,16499) gyro=(-218,26,107)
+INFO  range raw=228 filt=224 timing trig_us=20 wake_jitter_us=11 period_us=60004
+INFO  accel=(3313,360,16331) gyro=(-239,124,0)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=232 filt=228 timing trig_us=19 wake_jitter_us=11 period_us=60002
+INFO  accel=(2997,370,16635) gyro=(84,-49,6)
+INFO  range raw=241 filt=237 timing trig_us=26 wake_jitter_us=9 period_us=59997
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2903,386,16617) gyro=(78,125,0)
+INFO  range raw=237 filt=237 timing trig_us=24 wake_jitter_us=9 period_us=59998
+INFO  accel=(2725,400,16561) gyro=(-37,-306,6)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=228 filt=228 timing trig_us=26 wake_jitter_us=12 period_us=60000
+INFO  accel=(2937,394,16565) gyro=(151,-169,-2)
+INFO  range raw=232 filt=232 timing trig_us=22 wake_jitter_us=12 period_us=60003
+INFO  accel=(3177,494,16433) gyro=(-78,529,76)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=232 filt=228 timing trig_us=23 wake_jitter_us=10 period_us=60000
+INFO  accel=(2749,316,16513) gyro=(70,-145,2)
+INFO  range raw=228 filt=228 timing trig_us=19 wake_jitter_us=16 period_us=60000
+INFO  alive: imu+81 oled+10 button+141
+INFO  accel=(2657,248,16515) gyro=(5,-44,21)
+INFO  range raw=241 filt=241 timing trig_us=23 wake_jitter_us=13 period_us=60002
+INFO  accel=(2435,312,16653) gyro=(-23,-164,128)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=237 filt=237 timing trig_us=26 wake_jitter_us=9 period_us=59999
+INFO  accel=(2947,462,16591) gyro=(-174,-398,-64)
+INFO  range raw=237 filt=237 timing trig_us=19 wake_jitter_us=8 period_us=59999
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(3203,446,16545) gyro=(28,-1,48)
+INFO  range raw=237 filt=232 timing trig_us=18 wake_jitter_us=9 period_us=60002
+INFO  accel=(3041,550,16495) gyro=(-55,38,-11)
+INFO  range raw=232 filt=237 timing trig_us=24 wake_jitter_us=8 period_us=59995
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(2665,270,16763) gyro=(-41,20,77)
+INFO  range raw=237 filt=237 timing trig_us=25 wake_jitter_us=13 period_us=60006
+INFO  accel=(2435,372,16667) gyro=(97,291,-78)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=245 filt=245 timing trig_us=29 wake_jitter_us=10 period_us=60002
+INFO  accel=(2933,210,16785) gyro=(-45,-177,50)
+INFO  range raw=241 filt=232 timing trig_us=22 wake_jitter_us=8 period_us=60001
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(3055,320,16523) gyro=(-43,-167,48)
+INFO  range raw=232 filt=232 timing trig_us=31 wake_jitter_us=9 period_us=60000
+INFO  accel=(2895,296,16499) gyro=(-65,197,2)
+INFO  range raw=232 filt=232 timing trig_us=31 wake_jitter_us=15 period_us=60007
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2943,346,16431) gyro=(34,227,-80)
+INFO  range raw=241 filt=241 timing trig_us=19 wake_jitter_us=18 period_us=60008
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(3137,330,16369) gyro=(-177,751,41)
+INFO  range raw=232 filt=232 timing trig_us=28 wake_jitter_us=12 period_us=59995
+INFO  accel=(2881,396,16667) gyro=(50,-121,61)
+INFO  range raw=237 filt=237 timing trig_us=32 wake_jitter_us=13 period_us=60006
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(3029,340,16569) gyro=(77,-238,-33)
+INFO  range raw=232 filt=232 timing trig_us=29 wake_jitter_us=9 period_us=60001
+INFO  accel=(3189,292,16619) gyro=(-129,-62,74)
+INFO  range raw=232 filt=232 timing trig_us=31 wake_jitter_us=14 period_us=60006
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(2965,372,16407) gyro=(-66,-39,-61)
+INFO  range raw=223 filt=223 timing trig_us=22 wake_jitter_us=11 period_us=60002
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(2937,362,16493) gyro=(82,127,21)
+INFO  range raw=232 filt=232 timing trig_us=27 wake_jitter_us=15 period_us=60004
+INFO  accel=(2671,46,16385) gyro=(174,-864,-175)
+INFO  range raw=237 filt=294 timing trig_us=22 wake_jitter_us=8 period_us=59999
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(3045,168,16503) gyro=(-52,-186,61)
+INFO  range raw=241 filt=228 timing trig_us=23 wake_jitter_us=10 period_us=59999
+INFO  accel=(3175,252,16769) gyro=(-56,295,-82)
+INFO  range raw=228 filt=228 timing trig_us=18 wake_jitter_us=13 period_us=60006
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(3005,412,16697) gyro=(14,-515,81)
+INFO  range raw=241 filt=237 timing trig_us=22 wake_jitter_us=13 period_us=60006
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=232 filt=232 timing trig_us=25 wake_jitter_us=11 period_us=59993
+INFO  accel=(3267,302,16413) gyro=(-145,417,-62)
+INFO  range raw=232 filt=232 timing trig_us=23 wake_jitter_us=13 period_us=60005
+INFO  accel=(3369,386,16591) gyro=(139,367,47)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=241 filt=232 timing trig_us=19 wake_jitter_us=10 period_us=60000
+INFO  accel=(3037,328,16607) gyro=(-103,37,-114)
+INFO  range raw=232 filt=232 timing trig_us=19 wake_jitter_us=8 period_us=60001
+INFO  accel=(2997,292,16611) gyro=(-304,890,-48)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=232 filt=237 timing trig_us=20 wake_jitter_us=16 period_us=60006
+INFO  accel=(3003,422,16601) gyro=(86,-49,12)
+INFO  alive: imu+81 oled+10 button+140
+INFO  range raw=232 filt=232 timing trig_us=29 wake_jitter_us=17 period_us=60006
+INFO  accel=(3159,288,16291) gyro=(-54,175,113)
+INFO  range raw=232 filt=232 timing trig_us=23 wake_jitter_us=8 period_us=59998
+INFO  accel=(2775,346,16661) gyro=(1,305,97)
+INFO  alive: imu+80 oled+10 button+141
+INFO  range raw=237 filt=237 timing trig_us=18 wake_jitter_us=9 period_us=60001
+INFO  accel=(2203,190,16621) gyro=(-66,168,-126)
+INFO  range raw=245 filt=232 timing trig_us=24 wake_jitter_us=8 period_us=59998
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2905,330,16335) gyro=(-66,87,-124)
+INFO  range raw=241 filt=241 timing trig_us=24 wake_jitter_us=8 period_us=60000
+INFO  accel=(2971,276,16435) gyro=(-28,-389,78)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=232 filt=228 timing trig_us=25 wake_jitter_us=19 period_us=60007
+INFO  accel=(3125,274,16513) gyro=(75,-58,36)
+INFO  range raw=232 filt=232 timing trig_us=26 wake_jitter_us=10 period_us=60002
+INFO  accel=(2957,326,16601) gyro=(-115,-368,5)
+INFO  alive: imu+81 oled+10 button+140
+INFO  range raw=228 filt=228 timing trig_us=23 wake_jitter_us=12 period_us=60003
+INFO  accel=(2839,156,16499) gyro=(-144,188,50)
+INFO  range raw=228 filt=228 timing trig_us=18 wake_jitter_us=11 period_us=60001
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(3047,334,16369) gyro=(-165,869,55)
+INFO  range raw=232 filt=241 timing trig_us=19 wake_jitter_us=12 period_us=60003
+INFO  accel=(2843,400,16701) gyro=(38,-552,56)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=232 filt=232 timing trig_us=22 wake_jitter_us=16 period_us=60004
+INFO  accel=(3169,358,16567) gyro=(-55,-128,-22)
+INFO  range raw=228 filt=228 timing trig_us=23 wake_jitter_us=10 period_us=60001
+INFO  accel=(3151,362,16539) gyro=(180,85,31)
+INFO  alive: imu+81 oled+10 button+140
+INFO  range raw=227 filt=228 timing trig_us=20 wake_jitter_us=11 period_us=60004
+INFO  accel=(2929,132,16579) gyro=(-172,257,-134)
+INFO  range raw=223 filt=223 timing trig_us=22 wake_jitter_us=12 period_us=60003
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2477,164,16577) gyro=(-157,116,-130)
+INFO  range raw=223 filt=223 timing trig_us=19 wake_jitter_us=8 period_us=59997
+INFO  accel=(2619,304,16797) gyro=(86,98,-148)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=237 filt=232 timing trig_us=22 wake_jitter_us=9 period_us=59994
+INFO  accel=(2837,396,16741) gyro=(-3,-247,-31)
+INFO  range raw=232 filt=237 timing trig_us=26 wake_jitter_us=12 period_us=60004
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2763,312,16605) gyro=(14,219,-21)
+INFO  range raw=237 filt=237 timing trig_us=22 wake_jitter_us=9 period_us=60001
+INFO  accel=(2477,342,16567) gyro=(-67,-247,15)
+INFO  range raw=237 filt=237 timing trig_us=22 wake_jitter_us=11 period_us=60003
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(2743,364,16511) gyro=(52,-118,-19)
+INFO  range raw=223 filt=232 timing trig_us=22 wake_jitter_us=8 period_us=59997
+INFO  accel=(2887,214,16445) gyro=(-107,-171,-37)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=228 filt=228 timing trig_us=26 wake_jitter_us=9 period_us=59997
+INFO  accel=(3247,350,16129) gyro=(-15,427,-10)
+INFO  range raw=228 filt=232 timing trig_us=28 wake_jitter_us=11 period_us=60001
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(2829,280,16489) gyro=(61,127,85)
+INFO  range raw=241 filt=241 timing trig_us=29 wake_jitter_us=8 period_us=59989
+INFO  accel=(2625,344,16539) gyro=(-42,-16,10)
+INFO  range raw=237 filt=237 timing trig_us=26 wake_jitter_us=10 period_us=60001
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2491,294,16739) gyro=(-89,-251,65)
+INFO  range raw=237 filt=237 timing trig_us=26 wake_jitter_us=9 period_us=60001
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(3201,364,16525) gyro=(-203,-194,65)
+INFO  range raw=228 filt=228 timing trig_us=23 wake_jitter_us=11 period_us=59996
+INFO  accel=(3153,352,16581) gyro=(42,124,15)
+INFO  range raw=223 filt=223 timing trig_us=26 wake_jitter_us=10 period_us=60002
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=223 filt=232 timing trig_us=19 wake_jitter_us=16 period_us=60006
+INFO  accel=(3057,368,16517) gyro=(107,-14,-56)
+INFO  range raw=232 filt=237 timing trig_us=19 wake_jitter_us=7 period_us=59998
+INFO  accel=(2859,470,16509) gyro=(154,-95,65)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=241 filt=237 timing trig_us=23 wake_jitter_us=10 period_us=60003
+INFO  accel=(2581,406,16707) gyro=(88,-50,-74)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=237 filt=237 timing trig_us=26 wake_jitter_us=10 period_us=59999
+INFO  accel=(2927,288,16335) gyro=(-149,433,-207)
+INFO  range raw=237 filt=237 timing trig_us=21 wake_jitter_us=7 period_us=59996
+INFO  accel=(2655,410,16569) gyro=(64,143,65)
+INFO  alive: imu+82 oled+10 button+140
+INFO  range raw=246 filt=293 timing trig_us=21 wake_jitter_us=15 period_us=60008
+INFO  accel=(2531,318,16593) gyro=(37,-377,9)
+INFO  range raw=228 filt=232 timing trig_us=24 wake_jitter_us=9 period_us=60002
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(3043,356,16539) gyro=(19,-653,25)
+INFO  range raw=223 filt=223 timing trig_us=20 wake_jitter_us=11 period_us=60004
+INFO  accel=(3025,192,16515) gyro=(-169,373,-11)
+INFO  alive: imu+80 oled+10 button+141
+INFO  range raw=232 filt=232 timing trig_us=22 wake_jitter_us=9 period_us=59996
+INFO  accel=(3203,296,16337) gyro=(-195,842,53)
+INFO  range raw=232 filt=232 timing trig_us=20 wake_jitter_us=10 period_us=60001
+INFO  accel=(2761,364,16731) gyro=(-2,-358,32)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=246 filt=241 timing trig_us=20 wake_jitter_us=9 period_us=60001
+INFO  accel=(2923,332,16727) gyro=(-91,56,-138)
+INFO  range raw=237 filt=228 timing trig_us=24 wake_jitter_us=19 period_us=60012
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(3195,336,16509) gyro=(170,10,68)
+INFO  range raw=237 filt=237 timing trig_us=23 wake_jitter_us=10 period_us=60003
+INFO  accel=(3013,584,16821) gyro=(129,-66,39)
+INFO  alive: imu+81 oled+10 button+140
+INFO  range raw=232 filt=232 timing trig_us=27 wake_jitter_us=9 period_us=59998
+INFO  accel=(2853,350,16581) gyro=(-169,-8,-49)
+INFO  range raw=232 filt=232 timing trig_us=18 wake_jitter_us=9 period_us=60001
+INFO  alive: imu+81 oled+10 button+140
+INFO  accel=(2845,328,16571) gyro=(-8,23,33)
+INFO  range raw=237 filt=237 timing trig_us=20 wake_jitter_us=8 period_us=60001
+INFO  accel=(2903,314,16639) gyro=(192,326,17)
+INFO  range raw=241 filt=237 timing trig_us=22 wake_jitter_us=13 period_us=60004
+INFO  alive: imu+82 oled+10 button+140
+INFO  accel=(2605,106,16589) gyro=(-59,57,-17)
+INFO  range raw=237 filt=237 timing trig_us=19 wake_jitter_us=8 period_us=60000
+INFO  accel=(2893,396,16363) gyro=(-58,-439,74)
+INFO  alive: imu+81 oled+10 button+140
+INFO  range raw=228 filt=228 timing trig_us=25 wake_jitter_us=9 period_us=59992
+INFO  accel=(2923,334,16653) gyro=(-13,-508,5)
+INFO  range raw=237 filt=237 timing trig_us=20 wake_jitter_us=10 period_us=60001
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(3127,330,16511) gyro=(-9,305,-31)
+INFO  range raw=223 filt=237 timing trig_us=26 wake_jitter_us=9 period_us=60001
+INFO  accel=(2999,252,16665) gyro=(-100,-255,130)
+INFO  range raw=223 filt=223 timing trig_us=18 wake_jitter_us=8 period_us=59998
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2781,290,16511) gyro=(86,64,56)
+INFO  range raw=228 filt=237 timing trig_us=27 wake_jitter_us=10 period_us=60002
+INFO  accel=(2839,114,16521) gyro=(-232,368,-53)
+INFO  alive: imu+80 oled+10 button+140
+INFO  range raw=237 filt=237 timing trig_us=20 wake_jitter_us=12 period_us=59997
+INFO  accel=(2531,408,16681) gyro=(26,-124,-90)
+INFO  range raw=223 filt=227 timing trig_us=20 wake_jitter_us=9 period_us=59997
+INFO  alive: imu+80 oled+10 button+140
+INFO  accel=(2845,382,16533) gyro=(22,-289,64)
+INFO  range raw=223 filt=237 timing trig_us=24 wake_jitter_us=12 period_us=60001
+INFO  accel=(3241,294,16711) gyro=(89,-300,82)
+INFO  range raw=228 filt=228 timing trig_us=28 wake_jitter_us=10 period_us=60003
+INFO  alive: imu+80 oled+10 button+140

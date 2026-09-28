@@ -348,15 +348,24 @@ mod app {
         }
     }
 
-    #[task(local = [trig, led, median_filter,log_counter: u32 =0], shared = [echo], priority = 3)]
+    #[task(local = [trig, led, median_filter,log_counter: u32 =0,last_cycle_start: Option<fugit::TimerInstantU64<1_000_000>> = None], shared = [echo], priority = 3)]
     async fn ranger(mut cx: ranger::Context) {
         let mut next = Mono::now();
         loop {
+            let wake_actual = Mono::now();
+            let wake_jitter_us = (wake_actual - next).to_micros();
+
+            let period_us = match cx.local.last_cycle_start.replace(wake_actual) {
+                Some(prev) => (wake_actual - prev).to_micros(),
+                None => 60_000, // first cycle: no prior cycle to compare against
+            };
             cx.shared.echo.lock(|e| e.reset());
 
+            let t_trig_start = Mono::now();
             cx.local.trig.set_high().ok();
             Mono::delay(10.micros()).await;
             cx.local.trig.set_low().ok();
+            let trig_pulse_us = (Mono::now() - t_trig_start).to_micros();
 
             Mono::delay(35.millis()).await;
 
@@ -373,7 +382,10 @@ mod app {
 
             *cx.local.log_counter += 1;
             if *cx.local.log_counter % 10 == 0 {
-                defmt::info!("range raw={=u16} filt={=u16}", raw, filt);
+                defmt::info!(
+                "range raw={=u16} filt={=u16} timing trig_us={=u64} wake_jitter_us={=u64} period_us={=u64}",
+                raw, filt, trig_pulse_us, wake_jitter_us, period_us
+            );
             }
 
             if filt < 300 {

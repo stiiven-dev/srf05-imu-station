@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # capture-filter-log.sh — records defmt-serial output to a file for later
-# plotting (see tools/plot_filters.py). Ctrl+C to stop capturing; the file
-# is flushed as it goes, so a hard exit still leaves you a usable log.
+# plotting (see tools/plot_filters.py), while tolerating the board
+# resetting/re-enumerating mid-capture (same reconnect approach as
+# watch-defmt.sh). Ctrl+C to stop; the file is flushed as it goes, so a
+# hard exit still leaves you a usable log.
 #
 # Usage:
 #   ./capture-filter-log.sh [elf_path] [output_file]
@@ -10,35 +12,36 @@
 #   elf_path    -> target/thumbv6m-none-eabi/debug/srf05-imu-station
 #   output_file -> filter_log_<timestamp>.txt
 
-set -euo pipefail
+set -u
 
 ELF="${1:-target/thumbv6m-none-eabi/debug/srf05-imu-station}"
 OUT="${2:-filter_log_$(date +%Y%m%d_%H%M%S).txt}"
+CANDIDATES=(/dev/ttyACM0 /dev/ttyACM1)
+BAUD=115200
 
 if [[ ! -f "$ELF" ]]; then
-    echo "error: ELF not found at $ELF (build first: cargo build --release)" >&2
-    exit 1
+    echo "warning: ELF not found at '$ELF' — pass the correct path as an argument" >&2
 fi
 
-# Auto-detect the board's serial port. Adjust the glob if yours enumerates
-# differently (e.g. /dev/tty.usbmodem* on macOS).
-PORT=""
-for candidate in /dev/ttyACM0 /dev/ttyACM1 /dev/tty.usbmodem*; do
-    if [[ -e "$candidate" ]]; then
-        PORT="$candidate"
-        break
-    fi
-done
+find_port() {
+    for dev in "${CANDIDATES[@]}"; do
+        if [[ -e "$dev" ]]; then
+            echo "$dev"
+            return 0
+        fi
+    done
+    return 1
+}
 
-if [[ -z "$PORT" ]]; then
-    echo "error: no serial port found. Is the board plugged in and running (not in BOOTSEL mode)?" >&2
-    exit 1
-fi
+trap 'echo; echo "Stopped capturing. Saved to $OUT"; exit 0' INT
 
-echo "Capturing from $PORT -> $OUT (Ctrl+C to stop)"
+echo "watching for ${CANDIDATES[*]} -> $OUT (ctrl-c to stop)"
 echo "---"
 
-# `tee` writes to the file AND stdout so you can watch it live while it saves.
-# `stdbuf -oL` on defmt-print keeps output line-buffered so `tee`/the file
-# don't lag behind what you're seeing on screen.
-defmt-print -e "$ELF" < "$PORT" | stdbuf -oL cat | tee "$OUT"
+while true; do
+    port=$(find_port) || { sleep 0.2; continue; }
+    echo "[connected]    $port" | tee -a "$OUT"
+    socat "${port},rawer,b${BAUD}" STDOUT | defmt-print -e "$ELF" | tee -a "$OUT"
+    echo "[disconnected] $port — rescanning..." | tee -a "$OUT"
+    sleep 0.3
+done
